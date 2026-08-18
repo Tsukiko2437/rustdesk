@@ -252,42 +252,17 @@ pub fn clear_files() {
 }
 
 pub fn read_file_contents(
-    conn_id: i32,
-    stream_id: i32,
-    list_index: i32,
-    dw_flags: i32,
-    n_position_low: i32,
-    n_position_high: i32,
-    cb_requested: i32,
+    _conn_id: i32,
+    _stream_id: i32,
+    _list_index: i32,
+    _dw_flags: i32,
+    _n_position_low: i32,
+    _n_position_high: i32,
+    _cb_requested: i32,
 ) -> Vec<Result<ClipboardFile, CliprdrError>> {
-    let fcr = if dw_flags == 0x1 {
-        FileContentsRequest::Size {
-            stream_id,
-            file_idx: list_index as usize,
-        }
-    } else if dw_flags == 0x2 {
-        let offset = (n_position_high as u64) << 32 | n_position_low as u64;
-        let length = cb_requested as u64;
-
-        FileContentsRequest::Range {
-            stream_id,
-            file_idx: list_index as usize,
-            offset,
-            length,
-        }
-    } else {
-        return vec![Err(CliprdrError::InvalidRequest {
-            description: format!("got invalid FileContentsRequest, dw_flats: {dw_flags}"),
-        })];
-    };
-
-    let mut clip_files = CLIP_FILES.lock();
-    let mut res = vec![];
-    if let Some(files_res) = clip_files.get_files_for_audit(&fcr) {
-        res.push(Ok(files_res));
-    }
-    res.push(clip_files.serve_file_contents(conn_id, fcr));
-    res
+    // ❌ 拦截所有从被控端通过剪贴板读取文件的请求
+    log::warn!("Reading file contents via clipboard is permanently disabled!");
+    vec![]
 }
 
 pub fn sync_files(files: &[String]) -> Result<(), CliprdrError> {
