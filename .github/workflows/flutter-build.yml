@@ -100,11 +100,11 @@ jobs:
               platform: ARM64,
             }
     with:
-      upload-artifact: ${{ inputs.upload-artifact }}
+      upload-artifact: true
       target: ${{ matrix.job.target }}
       configuration: Release
       platform: ${{ matrix.job.platform }}
-      target_version: Windows10
+      target_version: windows10
 
   build-for-windows-flutter:
     name: ${{ matrix.job.target }}
