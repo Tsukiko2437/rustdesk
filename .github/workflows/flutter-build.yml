@@ -104,7 +104,7 @@ jobs:
       target: ${{ matrix.job.target }}
       configuration: Release
       platform: ${{ matrix.job.platform }}
-      target_version: windows10
+      target_version: Windows10
 
   build-for-windows-flutter:
     name: ${{ matrix.job.target }}
