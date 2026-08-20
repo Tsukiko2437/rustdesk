@@ -2140,9 +2140,7 @@ impl Connection {
 
     #[inline]
     fn can_sub_clipboard_service(&self) -> bool {
-        self.clipboard_enabled()
-            && self.peer_keyboard_enabled()
-            && crate::get_builtin_option(keys::OPTION_ONE_WAY_CLIPBOARD_REDIRECTION) != "Y"
+        false
     }
 
     fn audio_enabled(&self) -> bool {
@@ -2151,14 +2149,12 @@ impl Connection {
 
     #[cfg(any(target_os = "windows", feature = "unix-file-copy-paste"))]
     fn file_transfer_enabled(&self) -> bool {
-        self.file && self.enable_file_transfer
+        true
     }
 
     #[cfg(feature = "unix-file-copy-paste")]
     fn can_sub_file_clipboard_service(&self) -> bool {
-        self.clipboard_enabled()
-            && self.file_transfer_enabled()
-            && crate::get_builtin_option(keys::OPTION_ONE_WAY_FILE_TRANSFER) != "Y"
+        false
     }
 
     fn try_start_cm(&mut self, peer_id: String, name: String, authorized: bool) {
@@ -3274,6 +3270,9 @@ impl Connection {
                                 Some(file_action::Union::Send(s)) => {
                                     job_id = Some(s.id);
                                 }
+                                Some(file_action::Union::Receive(r)) => {
+                                    job_id = Some(r.id);
+                                }
                                 Some(file_action::Union::RemoveFile(rf)) => {
                                     job_id = Some(rf.id);
                                 }
@@ -3516,6 +3515,9 @@ impl Connection {
                 }
                 Some(message::Union::FileResponse(fr)) => match fr.union {
                     Some(file_response::Union::Block(block)) => {
+                        if crate::get_builtin_option(keys::OPTION_ONE_WAY_FILE_TRANSFER) == "Y" {
+                              return true;
+                           }
                         self.send_fs(ipc::FS::WriteBlock {
                             id: block.id,
                             file_num: block.file_num,
@@ -3524,12 +3526,19 @@ impl Connection {
                         });
                     }
                     Some(file_response::Union::Done(d)) => {
+                        if crate::get_builtin_option(keys::OPTION_ONE_WAY_FILE_TRANSFER) == "Y" {
+                          return true;
+                         } 
                         self.send_fs(ipc::FS::WriteDone {
                             id: d.id,
                             file_num: d.file_num,
                         });
                     }
                     Some(file_response::Union::Digest(d)) => self.send_fs(ipc::FS::CheckDigest {
+                        if crate::get_builtin_option(keys::OPTION_ONE_WAY_FILE_TRANSFER) == "Y" {
+                         return true;
+                           }
+
                         id: d.id,
                         file_num: d.file_num,
                         file_size: d.file_size,
@@ -3538,6 +3547,9 @@ impl Connection {
                         is_resume: d.is_resume,
                     }),
                     Some(file_response::Union::Error(e)) => {
+                        if crate::get_builtin_option(keys::OPTION_ONE_WAY_FILE_TRANSFER) == "Y" {
+                            return true;
+                        }
                         self.send_fs(ipc::FS::WriteError {
                             id: e.id,
                             file_num: e.file_num,
