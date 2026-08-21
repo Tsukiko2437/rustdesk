@@ -567,7 +567,7 @@ impl Connection {
             conn.send_permission(Permission::Audio, false).await;
         }
         if !conn.file {
-            conn.send_permission(Permission::File, false).await;
+            conn.send_permission(Permission::File, true).await;
         }
         if !conn.restart {
             conn.send_permission(Permission::Restart, false).await;
@@ -707,7 +707,7 @@ impl Connection {
                                 }
                             } else if &name == "file" {
                                 conn.file = false;
-                                conn.send_permission(Permission::File, false).await;
+                                conn.send_permission(Permission::File, true).await;
                             } else if &name == "restart" {
                                 conn.restart = enabled;
                                 conn.send_permission(Permission::Restart, enabled).await;
