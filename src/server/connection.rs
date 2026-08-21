@@ -476,7 +476,7 @@ impl Connection {
             clipboard: Self::permission(keys::OPTION_ENABLE_CLIPBOARD, &control_permissions),
             audio: Self::permission(keys::OPTION_ENABLE_AUDIO, &control_permissions),
             // to-do: make sure is the option correct here
-            file: Self::permission(keys::OPTION_ENABLE_FILE_TRANSFER, &control_permissions),
+            file: false,
             restart: Self::permission(keys::OPTION_ENABLE_REMOTE_RESTART, &control_permissions),
             recording: Self::permission(keys::OPTION_ENABLE_RECORD_SESSION, &control_permissions),
             block_input: Self::permission(keys::OPTION_ENABLE_BLOCK_INPUT, &control_permissions),
@@ -1735,7 +1735,7 @@ impl Connection {
         // Releases the budget `check_id_whitelist` charges against this address: only a peer
         // that got this far proved more than a self-reported id.
         self.clear_id_whitelist_failures();
-        let (conn_type, auth_conn_type) = if self.file_transfer.is_some() {
+        let (conn_type, auth_conn_type) = if false {
             (1, AuthConnType::FileTransfer)
         } else if self.port_forward_socket.is_some() {
             (2, AuthConnType::PortForward)
