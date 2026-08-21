@@ -85,9 +85,6 @@ fn run(sp: EmptyExtraFieldService) -> ResultType<()> {
                     handler.check_clipboard_file();
                     continue;
                 }
-                if let Some(msg) = handler.get_clipboard_msg() {
-                    sp.send(msg);
-                }
             }
             Ok(CallbackResult::Stop) => {
                 log::debug!("Clipboard listener stopped");
