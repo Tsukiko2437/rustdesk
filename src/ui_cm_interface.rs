@@ -758,24 +758,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
                     Some(_clip) => {
                         #[cfg(target_os = "windows")]
                         {
-                            let is_stopping_allowed = _clip.is_stopping_allowed();
-                            let is_clipboard_enabled = ContextSend::is_enabled();
-                            let file_transfer_enabled = self.file_transfer_enabled;
-                            let file_transfer_enabled_peer = self.file_transfer_enabled_peer;
-                            let stop = is_stopping_allowed && !(is_clipboard_enabled && file_transfer_enabled && file_transfer_enabled_peer);
-                            log::debug!(
-                                "Process clipboard message from clip, stop: {}, is_stopping_allowed: {}, is_clipboard_enabled: {}, file_transfer_enabled: {}, file_transfer_enabled_peer: {}",
-                                stop, is_stopping_allowed, is_clipboard_enabled, file_transfer_enabled, file_transfer_enabled_peer);
-                            if stop {
-                                ContextSend::set_is_stopped();
-                            } else {
-                                if _clip.is_beginning_message() && crate::get_builtin_option(OPTION_ONE_WAY_FILE_TRANSFER) == "Y" {
-                                    // If one way file transfer is enabled, don't send clipboard file to client
-                                    // Don't call `ContextSend::set_is_stopped()`, because it will stop bidirectional file copy&paste.
-                                } else {
-                                    allow_err!(self.tx.send(Data::ClipboardFile(_clip)));
-                                }
-                            }
+               log::debug!("customized: drop file clipboard uplink message");
                         }
                     }
                     None => {
@@ -836,7 +819,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
 pub async fn start_ipc<T: InvokeUiCM>(cm: ConnectionManager<T>) {
     #[cfg(target_os = "windows")]
     {
-        let enabled = crate::Connection::is_permission_enabled_locally(OPTION_ENABLE_FILE_TRANSFER);
+        let enabled = true;
         let mut lock = crate::ui_interface::IS_FILE_TRANSFER_ENABLED
             .lock()
             .unwrap();
