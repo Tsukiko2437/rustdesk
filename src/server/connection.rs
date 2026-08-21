@@ -706,20 +706,8 @@ impl Connection {
                                     }
                                 }
                             } else if &name == "file" {
-                                conn.file = enabled;
-                                conn.send_permission(Permission::File, enabled).await;
-                                #[cfg(feature = "unix-file-copy-paste")]
-                                if !enabled {
-                                    conn.try_empty_file_clipboard();
-                                }
-                                #[cfg(feature = "unix-file-copy-paste")]
-                                if let Some(s) = conn.server.upgrade() {
-                                    s.write().unwrap().subscribe(
-                                        super::clipboard_service::FILE_NAME,
-                                        conn.inner.clone(),
-                                        conn.can_sub_file_clipboard_service(),
-                                    );
-                                }
+                                conn.file = false;
+                                conn.send_permission(Permission::File, false).await;
                             } else if &name == "restart" {
                                 conn.restart = enabled;
                                 conn.send_permission(Permission::Restart, enabled).await;
@@ -2151,7 +2139,7 @@ impl Connection {
 
     #[cfg(any(target_os = "windows", feature = "unix-file-copy-paste"))]
     fn file_transfer_enabled(&self) -> bool {
-        self.file && self.enable_file_transfer
+        false
     }
 
     #[cfg(feature = "unix-file-copy-paste")]
