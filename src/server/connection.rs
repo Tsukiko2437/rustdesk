@@ -764,26 +764,10 @@ impl Connection {
                         }
                         #[cfg(target_os = "windows")]
                         ipc::Data::ClipboardFile(clip) => {
-                            if !conn.is_remote() {
-                                continue;
-                            }
-                            match clip {
-                                clipboard::ClipboardFile::Files { files } => {
-                                    let files = files.into_iter().map(|(f, s)| {
-                                        (f, s as i64)
-                                    }).collect::<Vec<_>>();
-                                    conn.post_file_audit(
-                                        FileAuditType::RemoteSend,
-                                        "",
-                                        files,
-                                        json!({}),
-                                    );
-                                }
-                                _ => {
-                                    allow_err!(conn.stream.send(&clip_2_msg(clip)).await);
-                                }
-                            }
-                        }
+                              if !conn.is_remote() {
+                              continue;
+                        }    continue;
+                       }
                         ipc::Data::PrivacyModeState((_, state, impl_key)) => {
                             let msg_out = match state {
                                 privacy_mode::PrivacyModeState::OffSucceeded => {
@@ -2672,16 +2656,9 @@ impl Connection {
             }
             match lr.union {
                 Some(login_request::Union::FileTransfer(ft)) => {
-                    if !Self::permission(
-                        keys::OPTION_ENABLE_FILE_TRANSFER,
-                        &self.control_permissions,
-                    ) {
-                        self.send_login_error("No permission of file transfer")
-                            .await;
-                        sleep(1.).await;
-                        return false;
-                    }
-                    self.file_transfer = Some((ft.dir, ft.show_hidden));
+            self.send_login_error("No permission of file transfer").await;
+             sleep(1.).await;
+                  return false;
                 }
                 Some(login_request::Union::ViewCamera(_vc)) => {
                     if !Self::permission(keys::OPTION_ENABLE_CAMERA, &self.control_permissions) {
@@ -3241,14 +3218,7 @@ impl Connection {
                     }
                 }
                 Some(message::Union::FileAction(fa)) => {
-                    let mut handle_fa = self.file_transfer.is_some();
-                    if !handle_fa {
-                        if let Some(file_action::Union::Send(s)) = fa.union.as_ref() {
-                            if JobType::from_proto(s.file_type) == JobType::Printer {
-                                handle_fa = true;
-                            }
-                        }
-                    }
+                    let handle_fa = false;
                     if handle_fa {
                         if self.delayed_read_dir.is_some() {
                             if let Some(file_action::Union::ReadDir(rd)) = fa.union {
@@ -4642,11 +4612,9 @@ impl Connection {
         #[cfg(any(target_os = "windows", feature = "unix-file-copy-paste"))]
         if let Ok(q) = o.enable_file_transfer.enum_value() {
             if q != BoolOption::NotSet {
-                self.enable_file_transfer = q == BoolOption::Yes;
-                #[cfg(target_os = "windows")]
-                self.send_to_cm(ipc::Data::ClipboardFileEnabled(
-                    self.file_transfer_enabled(),
-                ));
+        self.enable_file_transfer = false;
+        #[cfg(target_os = "windows")]
+        self.send_to_cm(ipc::Data::ClipboardFileEnabled(true));
                 #[cfg(feature = "unix-file-copy-paste")]
                 if !self.enable_file_transfer {
                     self.try_empty_file_clipboard();
