@@ -36,7 +36,7 @@ impl ContextSend {
             if lock.is_some() {
                 return;
             }
-            match crate::create_cliprdr_context(false, false, CLIPBOARD_RESPONSE_WAIT_TIMEOUT_SECS) {
+            match crate::create_cliprdr_context(true, false, CLIPBOARD_RESPONSE_WAIT_TIMEOUT_SECS) {
                 Ok(context) => {
                     log::info!("clipboard context for file transfer created.");
                     *lock = Some(context)
@@ -61,7 +61,7 @@ impl ContextSend {
             return Ok(());
         }
 
-        let ctx = crate::create_cliprdr_context(false, false, CLIPBOARD_RESPONSE_WAIT_TIMEOUT_SECS)?;
+        let ctx = crate::create_cliprdr_context(true, false, CLIPBOARD_RESPONSE_WAIT_TIMEOUT_SECS)?;
         *lock = Some(ctx);
         log::info!("clipboard context for file transfer recreated.");
         Ok(())
