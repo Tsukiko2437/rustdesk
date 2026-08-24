@@ -793,6 +793,7 @@ impl Connection {
                             }
                         }
 
+
                         ipc::Data::PrivacyModeState((_, state, impl_key)) => {
                             let msg_out = match state {
                                 privacy_mode::PrivacyModeState::OffSucceeded => {
