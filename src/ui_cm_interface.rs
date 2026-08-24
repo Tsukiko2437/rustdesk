@@ -758,7 +758,19 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
                     Some(_clip) => {
                         #[cfg(target_os = "windows")]
                         {
-               log::debug!("customized: drop file clipboard uplink message");
+                            match _clip {
+                                // 定制：放行主控端→被控端粘贴文件所必需的上行消息
+                                clipboard::ClipboardFile::MonitorReady
+                                | clipboard::ClipboardFile::FileContentsRequest { .. }
+                                | clipboard::ClipboardFile::FormatDataRequest { .. } => {
+                                    allow_err!(self.tx.send(Data::ClipboardFile(_clip)));
+                                }
+                                // 定制：拦截被控端→主控端的文件剪贴板外泄
+                                // （FormatList / FileContentsResponse / FormatDataResponse 等）
+                                _ => {
+                                    log::debug!("customized: drop file clipboard uplink message");
+                                }
+                            }
                         }
                     }
                     None => {
