@@ -764,10 +764,35 @@ impl Connection {
                         }
                         #[cfg(target_os = "windows")]
                         ipc::Data::ClipboardFile(clip) => {
-                              if !conn.is_remote() {
-                              continue;
-                        }    continue;
-                       }
+                            if !conn.is_remote() {
+                                continue;
+                            }
+                            match clip {
+                                clipboard::ClipboardFile::Files { files } => {
+                                    let files = files.into_iter().map(|(f, s)| {
+                                        (f, s as i64)
+                                    }).collect::<Vec<_>>();
+                                    conn.post_file_audit(
+                                        FileAuditType::RemoteSend,
+                                        "",
+                                        files,
+                                        json!({}),
+                                    );
+                                }
+                                // 定制：拦截被控端→主控端的文件外泄消息（双保险，CM 侧已拦）
+                                clipboard::ClipboardFile::FormatList { .. }
+                                | clipboard::ClipboardFile::FormatDataResponse { .. }
+                                | clipboard::ClipboardFile::FileContentsResponse { .. } => {
+                                    log::debug!("customized: drop file clipboard exfil message");
+                                }
+                                // 定制：放行 MonitorReady / FileContentsRequest 等
+                                // 主控端→被控端粘贴文件所必需的上行消息
+                                _ => {
+                                    allow_err!(conn.stream.send(&clip_2_msg(clip)).await);
+                                }
+                            }
+                        }
+
                         ipc::Data::PrivacyModeState((_, state, impl_key)) => {
                             let msg_out = match state {
                                 privacy_mode::PrivacyModeState::OffSucceeded => {
