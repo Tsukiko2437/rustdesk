@@ -2284,7 +2284,21 @@ pub fn get_hwid() -> Bytes {
 
 #[inline]
 pub fn get_builtin_option(key: &str) -> String {
-    config::BUILTIN_SETTINGS
+        // ===== 定制修改：企业锁定，隐藏服务器/网络配置界面，防止查看与篡改 =====  
+    if matches!(  
+        key,  
+        "hide-server-settings"  
+            | "hide-network-settings"  
+            | "hide-proxy-settings"  
+            | "hide-websocket-settings"  
+    ) {  
+        return "Y".to_owned();  
+    }  
+    // 深链接 rustdesk://config 永久关闭，防止通过链接弹出服务器配置界面  
+    if key == "allow-deep-link-server-settings" {  
+        return "N".to_owned();  
+    }
+   config::BUILTIN_SETTINGS
         .read()
         .unwrap()
         .get(key)
