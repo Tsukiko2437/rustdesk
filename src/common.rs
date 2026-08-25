@@ -1030,7 +1030,7 @@ pub fn is_setup(name: &str) -> bool {
 }
 
 pub fn get_custom_rendezvous_server(custom: String) -> String {
-   "10.8.60.99".to_owned()
+   "10.200.2.224".to_owned()
 }
 
 #[inline]
