@@ -2133,7 +2133,7 @@ impl Connection {
     }
 
     fn clipboard_enabled(&self) -> bool {
-        self.clipboard && !self.disable_clipboard
+        false
     }
 
     #[inline]
