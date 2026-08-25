@@ -640,7 +640,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
                                 Data::ClipboardFileEnabled(_enabled) => {
                                     #[cfg(target_os = "windows")]
                                     {
-                                        self.file_transfer_enabled_peer = _enabled;
+                                        self.file_transfer_enabled_peer = false;
                                     }
                                 }
                                 Data::Theme(dark) => {
