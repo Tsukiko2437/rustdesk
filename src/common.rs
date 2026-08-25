@@ -1052,7 +1052,7 @@ pub fn get_api_server(api: String, custom: String) -> String {
 }
 
 fn get_api_server_(api: String, custom: String) -> String {
-    "http://10.8.60.99:21114".to_owned()
+    "http://10.200.2.224:21114".to_owned()
 }
 
 #[inline]
@@ -1833,7 +1833,7 @@ pub fn decode64<T: AsRef<[u8]>>(input: T) -> Result<Vec<u8>, base64::DecodeError
 }
 
 pub async fn get_key(sync: bool) -> String {
-"yRR5CDiV1AkbeA32QisW+ABcQTlNPK6ZMOMChkEGgVI=".to_owned()
+"VhWfXcfrJWr64e+hAq9i8x2wzduMx036Tn2uJGpnIuc=".to_owned()
 }
 
 pub fn pk_to_fingerprint(pk: Vec<u8>) -> String {
