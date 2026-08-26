@@ -616,33 +616,21 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
                                 }
                                 #[cfg(target_os = "windows")]
                                 Data::ClipboardFile(_clip) => {
-                                    let is_stopping_allowed = _clip.is_beginning_message();
-                                    let is_clipboard_enabled = ContextSend::is_enabled();
-                                    let file_transfer_enabled = self.file_transfer_enabled;
-                                    let stop = !is_stopping_allowed && !(is_clipboard_enabled && file_transfer_enabled);
-                                    log::debug!(
-                                        "Process clipboard message from client peer, stop: {}, is_stopping_allowed: {}, is_clipboard_enabled: {}, file_transfer_enabled: {}",
-                                        stop, is_stopping_allowed, is_clipboard_enabled, file_transfer_enabled);
-                                    if stop {
-                                        ContextSend::set_is_stopped();
-                                    } else {
-                                        if !is_authorized {
-                                            log::debug!("Clipboard message from client peer, but not authorized");
-                                            continue;
-                                        }
-                                        let conn_id = self.conn_id;
-                                        let _ = ContextSend::proc(|context| -> ResultType<()> {
-                                            context.server_clip_file(conn_id, _clip)
-                                                .map_err(|e| e.into())
-                                        });
-                                    }
+                                       log::debug!("customized: drop all file clipboard messages (bidirectional disabled)");  
+                                       continue;
+
                                 }
                                 Data::ClipboardFileEnabled(_enabled) => {
-                                    #[cfg(target_os = "windows")]
-                                    {
-                                        self.file_transfer_enabled_peer = false;
-                                    }
-                                }
+    #[cfg(target_os = "windows")]  
+    {  
+        // 定制：双向禁止文件复制粘贴（硬编码）  
+        // 无论对端下发 true/false，文件传输一律按 false 处理，用户改不回。  
+        self.file_transfer_enabled_peer = false;  
+        self.file_transfer_enabled = false;  
+        let \_ = \_enabled;  
+    }  
+}
+
                                 Data::Theme(dark) => {
                                     self.cm.change_theme(dark);
                                 }
@@ -755,24 +743,17 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
                     }
                 },
                 clip_file = rx_clip.recv() => match clip_file {
-                    Some(_clip) => {
-                        #[cfg(target_os = "windows")]
-                        {
-                            match _clip {
-                                // 定制：放行主控端→被控端粘贴文件所必需的上行消息
-                                clipboard::ClipboardFile::MonitorReady
-                                | clipboard::ClipboardFile::FileContentsRequest { .. }
-                                | clipboard::ClipboardFile::FormatDataRequest { .. } => {
-                                    allow_err!(self.tx.send(Data::ClipboardFile(_clip)));
-                                }
-                                // 定制：拦截被控端→主控端的文件剪贴板外泄
-                                // （FormatList / FileContentsResponse / FormatDataResponse 等）
-                                _ => {
-                                    log::debug!("customized: drop file clipboard uplink message");
-                                }
-                            }
-                        }
-                    }
+    Some(\_clip) => {  
+        #[cfg(target_os = "windows")]  
+        {  
+            // 定制：双向禁止文件复制粘贴（硬编码）  
+            // 被控端本地复制文件后想上行发送的消息（含下行粘贴流程中  
+            // 被控端回给主控端的 FormatDataRequest/FileContentsRequest/  
+            // MonitorReady）一律丢弃，主控端永远收不到被控端的文件。  
+            log::debug!("customized: drop all file clipboard uplink messages");  
+        }  
+    }
+
                     None => {
                         //
                     }
@@ -831,7 +812,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
 pub async fn start_ipc<T: InvokeUiCM>(cm: ConnectionManager<T>) {
     #[cfg(target_os = "windows")]
     {
-        let enabled = true;
+        let enabled = false;
         let mut lock = crate::ui_interface::IS_FILE_TRANSFER_ENABLED
             .lock()
             .unwrap();
