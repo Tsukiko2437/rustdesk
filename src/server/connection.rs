@@ -2174,7 +2174,7 @@ impl Connection {
             clipboard: self.clipboard,
             audio: self.audio,
             file: self.file,
-            file_transfer_enabled: true,
+            file_transfer_enabled: false,
             restart: self.restart,
             recording: self.recording,
             block_input: self.block_input,
