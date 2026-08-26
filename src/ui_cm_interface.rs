@@ -621,15 +621,15 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
 
                                 }
                                 Data::ClipboardFileEnabled(_enabled) => {
-    #[cfg(target_os = "windows")]  
-    {  
-        // 定制：双向禁止文件复制粘贴（硬编码）  
-        // 无论对端下发 true/false，文件传输一律按 false 处理，用户改不回。  
-        self.file_transfer_enabled_peer = false;  
-        self.file_transfer_enabled = false;  
-        let \_ = \_enabled;  
-    }  
-}
+                                #[cfg(target_os = "windows")]  
+                               {  
+                           // 定制：双向禁止文件复制粘贴（硬编码）  
+                               // 无论对端下发 true/false，文件传输一律按 false 处理，用户改不回。  
+                               self.file_transfer_enabled_peer = false;  
+                               self.file_transfer_enabled = false;  
+                               let _ = _enabled;  
+                                     }  
+                                }
 
                                 Data::Theme(dark) => {
                                     self.cm.change_theme(dark);
