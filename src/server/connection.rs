@@ -3171,77 +3171,8 @@ impl Connection {
                 }
                 #[cfg(any(target_os = "windows", feature = "unix-file-copy-paste"))]
                 Some(message::Union::Cliprdr(clip)) => {
-                    if let Some(cliprdr::Union::Files(files)) = &clip.union {
-                        self.post_file_audit(
-                            FileAuditType::RemoteReceive,
-                            "",
-                            files
-                                .files
-                                .iter()
-                                .map(|f| (f.name.clone(), f.size as i64))
-                                .collect::<Vec<(String, i64)>>(),
-                            json!({}),
-                        );
-                    } else if let Some(clip) = msg_2_clip(clip) {
-                        #[cfg(target_os = "windows")]
-                        {
-                            self.send_to_cm(ipc::Data::ClipboardFile(clip));
-                        }
-                        #[cfg(feature = "unix-file-copy-paste")]
-                        if crate::is_support_file_copy_paste(&self.lr.version) {
-                            let mut out_msgs = vec![];
+      log::debug!("customized: drop all incoming file clipboard messages");
 
-                            #[cfg(target_os = "macos")]
-                            if clipboard::platform::unix::macos::should_handle_msg(&clip) {
-                                if let Err(e) = clipboard::ContextSend::make_sure_enabled() {
-                                    log::error!("failed to restart clipboard context: {}", e);
-                                } else {
-                                    let _ =
-                                        clipboard::ContextSend::proc(|context| -> ResultType<()> {
-                                            context
-                                                .server_clip_file(self.inner.id(), clip)
-                                                .map_err(|e| e.into())
-                                        });
-                                }
-                            } else {
-                                out_msgs = unix_file_clip::serve_clip_messages(
-                                    ClipboardSide::Host,
-                                    clip,
-                                    self.inner.id(),
-                                );
-                            }
-
-                            #[cfg(not(target_os = "macos"))]
-                            {
-                                out_msgs = unix_file_clip::serve_clip_messages(
-                                    ClipboardSide::Host,
-                                    clip,
-                                    self.inner.id(),
-                                );
-                            }
-
-                            for msg in out_msgs.into_iter() {
-                                if let Some(message::Union::Cliprdr(cliprdr)) = msg.union.as_ref() {
-                                    if let Some(cliprdr::Union::Files(files)) =
-                                        cliprdr.union.as_ref()
-                                    {
-                                        self.post_file_audit(
-                                            FileAuditType::RemoteSend,
-                                            "",
-                                            files
-                                                .files
-                                                .iter()
-                                                .map(|f| (f.name.clone(), f.size as i64))
-                                                .collect::<Vec<(String, i64)>>(),
-                                            json!({}),
-                                        );
-                                        continue;
-                                    }
-                                }
-                                self.send(msg).await;
-                            }
-                        }
-                    }
                 }
                 Some(message::Union::FileAction(fa)) => {
                     let handle_fa = false;
