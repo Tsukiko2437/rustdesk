@@ -743,7 +743,7 @@ impl<T: InvokeUiCM> IpcTaskRunner<T> {
                     }
                 },
                 clip_file = rx_clip.recv() => match clip_file {
-    Some(\_clip) => {  
+    Some(_clip) => {  
         #[cfg(target_os = "windows")]  
         {  
             // 定制：双向禁止文件复制粘贴（硬编码）  
